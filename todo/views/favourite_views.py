@@ -48,6 +48,6 @@ class FavouriteView(APIView):
     def delete(self, request, pk):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        queryset = Favourite.objects.get(id=pk)
+        queryset = get_object_or_404(Favourite, todo=pk, user=request.user.id)
         queryset.delete()
-        return Response({"message": "Success"}, status=status.HTTP_200_OK)
+        return Response({"message": "Success"}, status=status.HTTP_200_OK)  
