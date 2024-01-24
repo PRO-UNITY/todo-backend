@@ -199,3 +199,5 @@ SIMPLE_JWT = {
 }
 
 FORCE_SCRIPT_NAME = "/todo-api" 
+
+# todo-backend
