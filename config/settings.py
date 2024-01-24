@@ -198,6 +198,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-FORCE_SCRIPT_NAME = "/todo-api" 
+FORCE_SCRIPT_NAME = "/todo" 
 
 # todo-backend
