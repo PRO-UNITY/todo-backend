@@ -15,7 +15,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
 
           script: |
-            cd /var/www/chat-app 
+            cd /var/www/food-backend
             git pull
             source env/bin/activate
             python3 -m pip install -r requirements.txt
