@@ -38,14 +38,15 @@ def get_token_for_user(user):
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
 
-class GenerateToken(APIView):
+class UsersViews(APIView):
     render_classes = [UserRenderers]
     perrmisson_class = [IsAuthenticated]
     def get(self, request):
-        user = self.request.user
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        return Response({'access_token': access_token})
+        if not request.user.is_authenticated:
+            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
+        user = User.objects.all().order_by('-id')
+        serializers = UserInformationSerializer(user, many=True)
+        return Response(serializers.data, status=status.HTTP_200_OK)
 
 
 class UserSignUp(APIView):
@@ -175,7 +176,7 @@ class RequestPasswordRestEmail(generics.GenericAPIView):
             print(user)
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            absurl = f"http://localhost:5173/reset-password/{uidb64}/{token}"
+            absurl = f"http://localhost:8081/reset-password/{uidb64}/{token}"
             email_body = f"Hi \n Use link below to reset password \n link: {absurl}"
             data = {
                 "email_body": email_body,
