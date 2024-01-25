@@ -24,6 +24,7 @@ class TodoViews(APIView, Pagination):
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
+
         queryset = Todo.objects.all().order_by('-id')
         page = super().paginate_queryset(queryset)
         if page is not None:

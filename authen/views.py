@@ -39,11 +39,12 @@ def get_token_for_user(user):
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
 
-class UsersViews(APIView):
+class UsersViews(APIView, Pagination):
     render_classes = [UserRenderers]
     perrmisson_class = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
     serializer_class = UserInformationSerializer
+
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
