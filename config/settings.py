@@ -198,5 +198,5 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# FORCE_SCRIPT_NAME = "/todo" 
+FORCE_SCRIPT_NAME = "/todo" 
 

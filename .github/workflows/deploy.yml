@@ -21,8 +21,8 @@ jobs:
             python3 -m pip install -r requirements.txt
             python3 manage.py migrate
             deactivate
-            sudo systemctl start todo.socket
-            sudo systemctl enable todo.socket
+            sudo systemctl start crud.socket
+            sudo systemctl enable crud.socket
             sudo systemctl daemon-reload
-            sudo systemctl restart todo
+            sudo systemctl restart crud
             echo "Deployed at BackEnd"
