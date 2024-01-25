@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
+from todo.pagination import StandardResultsSetPagination, Pagination
+
 from authen.renderers import UserRenderers
 from todo.models import Todo
 from todo.serializers.todo_serliazers import (
@@ -13,16 +15,22 @@ from todo.serializers.todo_serliazers import (
 )
 
 
-class TodoViews(APIView):
+class TodoViews(APIView, Pagination):
     render_classes = [UserRenderers]
     perrmisson_class = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    serializer_class = TodoListSerializers
 
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        objects_list = Todo.objects.all().order_by('-id')
-        serializers = TodoListSerializers(objects_list, many=True, context={'user': request.user.id ,"request": request})
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        queryset = Todo.objects.all().order_by('-id')
+        page = super().paginate_queryset(queryset)
+        if page is not None:
+            serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request}).data)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=TodoCrudSerializers)
     def post(self, request):

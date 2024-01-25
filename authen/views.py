@@ -16,6 +16,7 @@ from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
 from authen.utils import Util
+from todo.pagination import StandardResultsSetPagination, Pagination
 from django.utils.encoding import (
     smart_str,
     smart_bytes,
@@ -41,12 +42,18 @@ def get_token_for_user(user):
 class UsersViews(APIView):
     render_classes = [UserRenderers]
     perrmisson_class = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    serializer_class = UserInformationSerializer
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        user = User.objects.all().order_by('-id')
-        serializers = UserInformationSerializer(user, many=True)
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        queryset = User.objects.all().order_by('-id')
+        page = super().paginate_queryset(queryset)
+        if page is not None:
+            serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request}).data)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserSignUp(APIView):

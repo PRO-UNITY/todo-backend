@@ -7,22 +7,29 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from authen.renderers import UserRenderers
 from todo.models import Todo, TodoCommentary
+from todo.pagination import StandardResultsSetPagination, Pagination
 from todo.serializers.comment_serliazers import (
     CommentsSerializers,
     CommentSerializer
 )
 
 
-class CommentsViews(APIView):
+class CommentsViews(APIView, Pagination):
     render_classes = [UserRenderers]
     perrmisson_class = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    serializer_class = CommentsSerializers
 
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        objects_list = TodoCommentary.objects.filter(user=request.user.id).order_by('-id')
-        serializers = CommentsSerializers(objects_list, many=True, context={'user': request.user.id ,"request": request})
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        queryset = TodoCommentary.objects.filter(user=request.user.id).order_by('-id')
+        page = super().paginate_queryset(queryset)
+        if page is not None:
+            serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request}).data)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=CommentSerializer)
     def post(self, request):
