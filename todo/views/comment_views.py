@@ -1,13 +1,17 @@
-from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
-from authen.renderers import UserRenderers
 from todo.models import Todo, TodoCommentary
 from todo.pagination import StandardResultsSetPagination, Pagination
+from utils.expected_fields import check_required_key
+from utils.auth_views import user_permission
+from utils.error_response import (
+    internal_server_response,
+    bad_request_response,
+    success_response,
+    success_created_response,
+)
 from todo.serializers.comment_serliazers import (
     CommentsSerializers,
     CommentSerializer
@@ -15,69 +19,66 @@ from todo.serializers.comment_serliazers import (
 
 
 class CommentsViews(APIView, Pagination):
-    render_classes = [UserRenderers]
-    perrmisson_class = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
     serializer_class = CommentsSerializers
 
-    def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        queryset = TodoCommentary.objects.filter(user=request.user.id).order_by('-id')
+    @user_permission
+    def get(self, request, user_id=None):
+        if user_id is None:
+            return internal_server_response()
+        queryset = TodoCommentary.objects.filter(user=user_id).order_by('-id')
         page = super().paginate_queryset(queryset)
         if page is not None:
             serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request}).data)
         else:
             serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return success_response(serializer.data)
 
+    @user_permission
     @swagger_auto_schema(request_body=CommentSerializer)
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        expected_fields = set(['id', 'todo', 'user', 'comment', 'create_at'])
-        received_fields = set(request.data.keys())
-        unexpected_fields = received_fields - expected_fields
+    def post(self, request, user_id=None):
+        if user_id is None:
+            return internal_server_response("Invalid user data")
+        valid_fields = {'id', 'todo', 'user', 'comment', 'create_at'}
+        unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
-            error_message = (f"Unexpected fields in request data: {', '.join(unexpected_fields)}")
-            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
-        serializers = CommentSerializer(data=request.data, context={"user": request.user})
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        serializers = CommentSerializer(data=request.data, context={"user": user_id})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
-            return Response(serializers.data, status=status.HTTP_201_CREATED)
-        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+            return success_created_response(serializers.data)
+        return bad_request_response(serializers.errors)
 
 
 class CommentView(APIView):
-    render_classes = [UserRenderers]
-    perrmisson_class = [IsAuthenticated]
 
-    def get(self, request, pk):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
+    @user_permission
+    def get(self, request, pk, user_id=None):
+        if user_id is None:
+            return internal_server_response()
         objects_list = get_object_or_404(Todo, id=pk)
         serializers = CommentsSerializers(objects_list, context={"request": request})
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        return success_response(serializers.data)
 
+    @user_permission
     @swagger_auto_schema(request_body=CommentSerializer)
-    def put(self, request, pk):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        expected_fields = set(['id', 'todo', 'user', 'comment', 'create_at'])
-        received_fields = set(request.data.keys())
-        unexpected_fields = received_fields - expected_fields
+    def put(self, request, pk, user_id=None):
+        if user_id is None:
+            return internal_server_response()
+        valid_fields = {'id', 'todo', 'user', 'comment', 'create_at'}
+        unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
-            error_message = (f"Unexpected fields in request data: {', '.join(unexpected_fields)}")
-            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
         serializers = CommentSerializer(context={"user": request.user, "request": request}, instance=Todo.objects.filter(id=pk)[0], data=request.data, partial=True,)
         if serializers.is_valid(raise_exception=True):
             serializers.save()
-            return Response(serializers.data, status=status.HTTP_200_OK)
-        return Response({"error": "update error data"}, status=status.HTTP_400_BAD_REQUEST)
+            return success_created_response(serializers.data)
+        return success_response(serializers.errors)
 
-    def delete(self, request, pk):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
+    @user_permission
+    def delete(self, request, pk, user_id=None):
+        if user_id is None:
+            return internal_server_response()
         queryset = TodoCommentary.objects.get(id=pk)
         queryset.delete()
-        return Response({"message": "Success"}, status=status.HTTP_200_OK)
+        return success_response("delete success")
