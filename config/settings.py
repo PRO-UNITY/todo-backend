@@ -123,8 +123,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_URL = "/food-delivery/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static_cdn")
 MEDIA_URL = "/food-delivery/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "/home/ibrokhim/Desktop/projects1/media")
-# MEDIA_ROOT = os.path.join(BASE_DIR, "/home/media")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "/home/ibrokhim/Desktop/projects1/media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "/home/media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -197,6 +197,7 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-FORCE_SCRIPT_NAME = "/api" 
-# BASE_URL = "http://127.0.0.1:8000/auth/auth/users"
+FORCE_SCRIPT_NAME = "/api"
+# BASE_URL = "http://192.168.0.114:8001/auth/user" 
+# BASE_URL = "http://127.0.0.1:8000/auth/auth/user"
 BASE_URL = "https://register-app.prounity.uz/api/auth/user"
