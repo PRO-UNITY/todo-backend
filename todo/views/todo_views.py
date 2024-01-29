@@ -29,7 +29,7 @@ class TodoViews(APIView, Pagination):
         queryset = Todo.objects.all().order_by('-id')
         page = super().paginate_queryset(queryset)
         if page is not None:
-            serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request}).data)
+            serializer = super().get_paginated_response(self.serializer_class(page, many=True, context={"request": request, "user": user_id}).data)
         else:
             serializer = self.serializer_class(queryset, many=True)
         return success_response(serializer.data)
