@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_yasg",
-    "authen",
     "todo",
 ]
 
@@ -199,4 +198,5 @@ SIMPLE_JWT = {
 }
 
 FORCE_SCRIPT_NAME = "/api" 
-
+# BASE_URL = "http://127.0.0.1:8000/auth/auth/users"
+BASE_URL = "https://crud-app.prounity.uz/api/auth/user"

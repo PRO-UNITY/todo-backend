@@ -1,10 +1,8 @@
 from rest_framework import serializers
 from todo.models import Todo, Favourite, TodoCommentary
-from authen.serializers import UserInformationSerializer
 
 
 class TodoCommentarySerializer(serializers.ModelSerializer):
-    user = UserInformationSerializer(read_only=True)
 
     class Meta:
         model = TodoCommentary
@@ -15,7 +13,6 @@ class TodoListSerializers(serializers.ModelSerializer):
     favorite_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     favorite = serializers.SerializerMethodField()
-    user = UserInformationSerializer(read_only=True)
     comment = TodoCommentarySerializer(many=True, read_only=True)
     class Meta:
         model = Todo

@@ -3,10 +3,16 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
-from authen.renderers import UserRenderers
 from todo.models import Favourite
+from utils.auth_views import user_permission
+from utils.expected_fields import check_required_key
+from utils.error_response import (
+    internal_server_response,
+    bad_request_response,
+    success_response,
+    success_created_response,
+)
 from todo.serializers.favourite_serliazers import (
     FavouriteSerializers,
     FavoriteSerializer
@@ -14,40 +20,38 @@ from todo.serializers.favourite_serliazers import (
 
 
 class FavouritesViews(APIView):
-    render_classes = [UserRenderers]
-    perrmisson_class = [IsAuthenticated]
 
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
         objects_list = Favourite.objects.filter(user=request.user.id).order_by('-id')
         serializers = FavouriteSerializers(objects_list, many=True, context={"request": request})
-        return Response(serializers.data, status=status.HTTP_200_OK)
+        return success_response(serializers.data)
 
+    @user_permission
     @swagger_auto_schema(request_body=FavoriteSerializer)
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        expected_fields = set(['id', 'todo', 'user', 'is_favorite', 'create_at', 'updated_at'])
-        received_fields = set(request.data.keys())
-        unexpected_fields = received_fields - expected_fields
+    def post(self, request, user_id=None):
+        if user_id is None:
+            return internal_server_response()
+        
+        valid_fields = {'id', 'todo', 'user', 'is_favorite', 'create_at', 'updated_at'}
+        unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
-            error_message = (f"Unexpected fields in request data: {', '.join(unexpected_fields)}")
-            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
-        serializers = FavoriteSerializer(data=request.data, context={"user": request.user})
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+
+        serializers = FavoriteSerializer(data=request.data, context={"user": user_id})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
-            return Response(serializers.data, status=status.HTTP_201_CREATED)
-        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+            return success_created_response(serializers.data)
+        return bad_request_response(serializers.errors)
 
 
 class FavouriteView(APIView):
-    render_classes = [UserRenderers]
-    perrmisson_class = [IsAuthenticated]
 
-    def delete(self, request, pk):
-        if not request.user.is_authenticated:
-            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
-        queryset = get_object_or_404(Favourite, todo=pk, user=request.user.id)
+    @user_permission
+    def delete(self, request, pk, user_id=None):
+        if user_id is None:
+            return internal_server_response()
+        queryset = get_object_or_404(Favourite, todo=pk, user=user_id)
         queryset.delete()
-        return Response({"message": "Success"}, status=status.HTTP_200_OK)  
+        return success_response("delete success")

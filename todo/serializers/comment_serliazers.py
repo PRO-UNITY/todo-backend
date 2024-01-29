@@ -1,12 +1,10 @@
 from rest_framework import serializers
 from todo.models import TodoCommentary
 from todo.serializers.todo_serliazers import TodoListSerializers
-from authen.serializers import UserInformationSerializer
 
 
 class CommentsSerializers(serializers.ModelSerializer):
     todo = TodoListSerializers(read_only=True)
-    user = UserInformationSerializer(read_only=True)
 
     class Meta:
         model = TodoCommentary
