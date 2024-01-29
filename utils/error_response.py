@@ -2,11 +2,11 @@ from rest_framework import status
 from rest_framework.response import Response
 
 
-def internal_server_response(message):
-    return Response({"error": message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+def internal_server_response(error_message):
+    return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-def bad_request_response(message):
-    return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
+def bad_request_response(error_message):
+    return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def unauthorized_response(error_message):

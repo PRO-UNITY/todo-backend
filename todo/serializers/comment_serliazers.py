@@ -3,19 +3,24 @@ from todo.models import TodoCommentary
 from todo.serializers.todo_serliazers import TodoListSerializers
 
 
-class CommentsSerializers(serializers.ModelSerializer):
+class BaseCommentSerializer(serializers.ModelSerializer):
     todo = TodoListSerializers(read_only=True)
 
     class Meta:
         model = TodoCommentary
-        fields= ['id', 'todo', 'user', 'comment', 'create_at']
+        fields = ['id', 'todo', 'user', 'comment', 'create_at']
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentsSerializers(BaseCommentSerializer):
+    
+    class Meta(BaseCommentSerializer.Meta):
+        fields= BaseCommentSerializer.Meta.fields
 
-    class Meta:
-        model = TodoCommentary
-        fields= ['id', 'todo', 'user', 'comment', 'create_at']
+
+class CommentSerializer(BaseCommentSerializer):
+
+    class Meta(BaseCommentSerializer.Meta):
+        fields= BaseCommentSerializer.Meta.fields
     
     def create(self, validated_data):
         comment = TodoCommentary.objects.create(**validated_data)

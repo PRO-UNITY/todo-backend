@@ -29,8 +29,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "rest_framework",
     "corsheaders",
-    "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_yasg",
     "todo",
@@ -143,21 +141,6 @@ REST_FRAMEWORK = {
 }
 
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer", "Token"),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
-    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_TYPE_CLAIM": "token_type",
-    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
-    "JTI_CLAIM": "jti",
-}
-
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -178,23 +161,15 @@ SWAGGER_SETTINGS = {
             "in": "header",
         }
     },
-    "TITLE": "Food delivery",
-    "DESCRIPTION": "Food Delivery back-end",
+    "TITLE": "Todo project API",
+    "DESCRIPTION": "Todo project back-end",
     "VERSION": "0.1.0",
     "USE_SESSION_AUTH": False,
 }
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Food-delivery API",
-    "DESCRIPTION": "Food-delivery back-end",
+    "TITLE": "Todo project API",
+    "DESCRIPTION": "Todo project back-end",
     "VERSION": "0.1.0",
-}
-
-REST_USE_JWT = True
-JWT_AUTH = {"JWT_RESPONSE_PAYLOAD_HANDLER": "authentification.utils.jwt_response_payload_handler"}
-
-SIMPLE_JWT = {
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
 }
 
 FORCE_SCRIPT_NAME = "/api"
