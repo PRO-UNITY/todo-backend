@@ -172,7 +172,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
-FORCE_SCRIPT_NAME = "/api"
+FORCE_SCRIPT_NAME = "/crud"
 # BASE_URL = "http://192.168.0.114:8001/auth/user" 
 # BASE_URL = "http://127.0.0.1:8000/auth/auth/user"
-BASE_URL = "https://register-app.prounity.uz/api/auth/user"
+BASE_URL = "https://api.prounity.uz/auth/user"
